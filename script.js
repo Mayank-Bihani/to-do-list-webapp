@@ -9,29 +9,29 @@ const createTodoElement = (todo,id) => {
     todoDiv.classList.add("complete");
   }
 
-  const newTodo = document.createElement("li");
+  const newTodo = document.createElement("h3");
   newTodo.textContent = todo.title;
   newTodo.classList.add("todo-item");
 
   todoDiv.appendChild(newTodo);
   //category 
   const catVal=document.getElementById("category").value;
-  const category=document.createElement("h3");
+  const category=document.createElement("p");
   category.innerText=todo.cat;
   todoDiv.appendChild(category);
   //tags 
   const tagVal=document.getElementById("tags").value;
-  const tag=document.createElement("h3");
+  const tag=document.createElement("p");
   tag.innerText=todo.tag;
   todoDiv.appendChild(tag);
   //priority 
   const prtVal=document.getElementById("prt").value;
-  const priority=document.createElement("h3");
+  const priority=document.createElement("p");
   priority.innerText=todo.priority;
   todoDiv.appendChild(priority);
   //due date
   const dueVal=document.getElementById("DueDate").value;
-  const dueDate=document.createElement("h3");
+  const dueDate=document.createElement("p");
   dueDate.innerText=todo.date;
   todoDiv.appendChild(dueDate);
 
@@ -286,8 +286,39 @@ function priorityFilterFunc(priorityVal){
 }
 
 //edit
-function onEditTask(id){
-   
+// store current task to track changes
+var currentTask = null;
+
+// get current task
+function getCurrentTask(event) {
+  currentTask = event.value;
+}
+
+// edit the task and update local storage
+function editTask(event) {
+  let tasks = Array.from(JSON.parse(localStorage.getItem("tasks")));
+  // check if task is empty
+  if (event.value === "") {
+    alert("Task is empty!");
+    event.value = currentTask;
+    return;
+  }
+  // task already exist
+  todoListArr.forEach(task => {
+    if (todoListArr.task === event.value) {
+      alert("Task already exist!");
+      event.value = currentTask;
+      return;
+    }
+  });
+  // update task
+  todoListArr.forEach(task => {
+    if (todoListArr.task === currentTask) {
+      todoListArr.task = event.value;
+    }
+  });
+  // update local storage
+  localStorage.setItem("tasks", JSON.stringify(todoListArr));
 }
 
 //search function
