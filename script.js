@@ -1,143 +1,317 @@
-// Array to store the to-do tasks
-let tasks = [];
+const todoForm = document.querySelector("form");
+const todoList = document.querySelector(".todo-list");
 
-// Function to check if api is called before in order to call the api only once at the start of loading the page
-function checkapicalled(){
-  const value = localStorage.getItem("isapicalled");
-  if(value){
-    return true;
-  }
-  else{
-    localStorage.setItem("isapicalled",1);
-    return false;
-  }
-}
-
-// Fetch tasks from the API and save to local storage
-function fetchTasks() {
-  fetch('https://jsonplaceholder.typicode.com/todos') 
-    .then(response => response.json())
-    .then(data => {
-      // Assuming the API response contains an array of tasks
-      tasks = data;
-      saveTasks();
-      renderTaskList();
-
-      console.log('Tasks fetched successfully:', data);
-    })
-    .catch(error => {
-      console.error('Error fetching tasks:', error);
-    });
-  
-}
-
-// Fetch tasks from api only if it had not been called before.
-  if(!checkapicalled()){
-    fetchTasks();
+const createTodoElement = (todo,id) => {
+  console.log(todo);
+  const todoDiv = document.createElement("div");
+  todoDiv.classList.add("todo");
+  if (todo.completed) {
+    todoDiv.classList.add("complete");
   }
 
+  const newTodo = document.createElement("li");
+  newTodo.textContent = todo.title;
+  newTodo.classList.add("todo-item");
 
-// Function to save tasks to local storage
-function saveTasks() {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-  
-// Function to add a new task to the array and render the list
-function addTask() {
-  const taskInput = document.getElementById("taskInput");
-  const taskText = taskInput.value.trim();
-  if (taskText !== "") {
-    const newTask = {
-      title: taskText,
-      id: Date.now(), // Generate a unique ID for the task
-      completed: false
-    };
-    tasks.push(newTask);
-    taskInput.value = "";
-    renderTaskList();
-    saveTasks(); // Save tasks to local storage
-  }
-}
+  todoDiv.appendChild(newTodo);
+  //category 
+  const catVal=document.getElementById("category").value;
+  const category=document.createElement("h3");
+  category.innerText=todo.cat;
+  todoDiv.appendChild(category);
+  //tags 
+  const tagVal=document.getElementById("tags").value;
+  const tag=document.createElement("h3");
+  tag.innerText=todo.tag;
+  todoDiv.appendChild(tag);
+  //priority 
+  const prtVal=document.getElementById("prt").value;
+  const priority=document.createElement("h3");
+  priority.innerText=todo.priority;
+  todoDiv.appendChild(priority);
+  //due date
+  const dueVal=document.getElementById("DueDate").value;
+  const dueDate=document.createElement("h3");
+  dueDate.innerText=todo.date;
+  todoDiv.appendChild(dueDate);
 
-// Function to delete a task from the array and render the updated list
-function deleteTask(taskIndex) {
-  tasks.splice(taskIndex, 1);
-  renderTaskList();
-  saveTasks(); // Save tasks to local storage
-}
+  // Complete Button
+  const completedButton = document.createElement("button");
+  completedButton.innerHTML = `<i class="fas fa-check"></i>`;
+  completedButton.classList.add("complete-btn");
+  todoDiv.appendChild(completedButton);
 
-// Function to toggle editing mode for a task
-function toggleEditing(taskIndex) {
-  const listItem = document.getElementById(`task_${taskIndex}`);
-  const taskTextElement = listItem.querySelector("span");
-  const editButton = listItem.querySelector(".edit-button");
+  // Trash Button
+  const trashButton = document.createElement("button");
+  trashButton.innerHTML = `<i class="fas fa-trash"></i>`;
+  trashButton.classList.add("trash-btn");
+  todoDiv.appendChild(trashButton);
 
-  if (listItem.classList.contains("editing")) {
-    const editInput = listItem.querySelector("input");
-    const newTaskText = editInput.value.trim();
-    taskTextElement.textContent = newTaskText;
-    editButton.textContent = "Edit";
-    listItem.classList.remove("editing");
-    editTask(taskIndex, newTaskText);
-    saveTasks(); // Save tasks to local storage
+  // Edit Button
+  const editButton = document.createElement("button");
+  editButton.innerHTML = `<i class="fas fa-edit"></i>`;
+  editButton.classList.add("edit-btn");
+  editButton.setAttribute("onclick",id);
+  todoDiv.appendChild(editButton);
+
+  return todoDiv;
+};
+
+let todoListArr = [];
+
+// {
+//     title: 'jntjg'
+      //  category:' '
+      //  tag
+      //  priority
+      //  date
+// }
+
+document.addEventListener("DOMContentLoaded", (e) => {
+  console.log(localStorage.getItem("todo"));
+  if (localStorage.getItem("todo")) {
+    todoListArr = JSON.parse(localStorage.getItem("todo"));
   } else {
-    const taskText = taskTextElement.textContent;
-    taskTextElement.innerHTML = `<input type="text" class="edit-input" value="${taskText}">`;
-    editButton.textContent = "Save";
-    listItem.classList.add("editing");
+    localStorage.setItem("todo", JSON.stringify(todoListArr));
   }
-}
-
-// Function to edit a task in the array and render the updated list
-function editTask(taskIndex, newTaskText) {
-  tasks[taskIndex].title = newTaskText;
-  renderTaskList();
-  saveTasks(); // Save tasks to local storage
-}
-
-// Function to render the task list in the UI
-function renderTaskList() {
-  const taskList = document.getElementById("taskList");
-  taskList.innerHTML = "";
-
-  tasks.forEach((task, index) => {
-    const listItem = document.createElement("li");
-    listItem.id = `task_${index}`;
-
-    const taskTextElement = document.createElement("span");
-    taskTextElement.textContent = task.title;
-
-    const editButton = document.createElement("button");
-    editButton.textContent = "Edit";
-    editButton.classList.add("edit-button");
-    editButton.addEventListener("click", () => toggleEditing(index));
-
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
-    deleteButton.classList.add("delete-button");
-    deleteButton.addEventListener("click", () => deleteTask(index));
-
-    listItem.appendChild(taskTextElement);
-    listItem.appendChild(editButton);
-    listItem.appendChild(deleteButton);
-    taskList.appendChild(listItem);
+  let i=0;
+  todoListArr.forEach((todo) => {
+    //create todo
+    const todoDiv = createTodoElement(todo,i);
+    todoList.appendChild(todoDiv);
+    i++;
   });
+});
+
+todoForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+ 
+  const title = todoForm.todo.value;
+  const cat=document.getElementById("category").value;
+  const tag=document.getElementById("tags").value;
+  const date=document.getElementById("DueDate").value;
+  const priority=document.getElementById("prt").value;
+
+  const todoDiv = createTodoElement({ title: title, cat:cat , tag:tag , date:date , priority:priority,completed: false },todoListArr.length);
+  todoListArr.push({ title: title, cat:cat , tag:tag , date:date , priority:priority,completed: false});
+  localStorage.setItem("todo", JSON.stringify(todoListArr));
+  todoList.appendChild(todoDiv);
+  todoForm.todo.value = "";
+
+  //console.log(todoListArr);
+});
+
+todoList.addEventListener("click", (e) => {
+  const item = e.target;
+
+  if (item.classList.contains("complete-btn")) {
+    const todo = item.parentElement;
+    if (!todo.classList.contains("complete")) {
+      todoListArr = todoListArr.map((todoElement) => {
+        if (todoElement.title !== todo.textContent) {
+          return todoElement;
+        } else {
+          return {
+            title: todoElement.title,
+            completed: true
+          };
+        }
+      });
+
+      localStorage.setItem("todo", JSON.stringify(todoListArr));
+      todo.classList.add("complete");
+    } else {
+      todoListArr = todoListArr.map((todoElement) => {
+        if (todoElement.title !== todo.textContent) {
+          return todoElement;
+        } else {
+          return {
+            title: todoElement.title,
+            completed: false
+          };
+        }
+      });
+
+      localStorage.setItem("todo", JSON.stringify(todoListArr));
+      todo.classList.remove("complete");
+    }
+  }
+
+  if (item.classList.contains("trash-btn")) {
+    const todo = item.parentElement;
+    todo.classList.add("fall");
+    todo.addEventListener("transitionend", (e) => {
+      todoListArr = todoListArr.filter((td) => {
+        return td.title !== todo.textContent;
+      });
+
+      localStorage.setItem("todo", JSON.stringify(todoListArr));
+
+      todo.remove();
+    });
+  }
+
+  if(item.classList.contains("edit-btn")){
+    const todo = item.parentElement;
+    //todo.
+    //console.log(todo);
+  }
+});
+
+// localStorage
+
+// localStorage.setItem("name", "Aditya");
+
+// console.log(localStorage.getItem("friend"));
+
+// localStorage.setItem("friend", "Bob");
+// localStorage.setItem
+
+// let arr = [122, 23, 32];
+// console.log(arr);
+// localStorage.setItem("arr", JSON.stringify(arr));
+
+// console.log(JSON.parse(localStorage.getItem("arr"))[1]);
+
+// const completeFilterBtn = document.querySelector(".complete-filter");
+
+// completeFilterBtn.addEventListener("click", (e) => {
+//   const todos = todoList.children;
+//   // console.log(todos);
+//   for (let i = 0; i < todos.length; i++) {
+//     if (!todos[i].classList.contains("complete")) {
+//       todos[i].style.display = "none";
+//     }
+//   }
+// });
+
+// filter functionality
+const Filter=document.getElementById("ciFilter");
+const incompletedFilter=document.getElementById("incmplt");
+const duedateFilter=document.getElementById("dd");
+const categoryFilter=document.getElementById("catFilter");
+const priorityFilter=document.getElementById("prtFilter");
+const tagFilter=document.getElementById("tg");
+
+Filter.addEventListener("change",(e)=>{
+    const el=e.target.value;
+    if(el=="Completed"){
+        console.log("complete");
+        completeFilter();
+    }
+    else if(el=="Incomplete"){
+        IncompleteFilter();
+    }
+    
+});
+//complete incomplete filter
+function completeFilter(){
+    const todos = todoList.children;
+  for (let i = 0; i < todos.length; i++) {
+    if (!todos[i].classList.contains("complete")) {
+      todos[i].style.display = "none";
+    }
+    else{
+        todos[i].style.display = "grid"; 
+    }
+  }
 }
-
-// Event listener for the add button
-const addButton = document.getElementById("addButton");
-addButton.addEventListener("click", addTask);
-
-// Function to load the tasks from the local storage
-function loadTasksFromLocalStorage() {
-  const storedTasks = localStorage.getItem('tasks');
-  if (storedTasks) {
-    tasks = JSON.parse(storedTasks);
-    renderTaskList();
+function IncompleteFilter(){
+    const todos = todoList.children;
+  for (let i = 0; i < todos.length; i++) {
+    if (todos[i].classList.contains("complete")) {
+      todos[i].style.display = "none";
+    }
+    else{
+        todos[i].style.display = "grid"; 
+    }
+  }
+}
+//category filter
+categoryFilter.addEventListener("change",(e)=>{
+  const el=e.target.value;
+  console.log(el);
+  if(el=="Grocery"){
+      categoryFilterFunc("Grocery");
+  }
+  else if(el=="Diary"){
+    categoryFilterFunc("Diary");
+  }
+  else if(el=="Stationary"){
+    categoryFilterFunc("Stationary");
+  }
+  else if(el=="Electronic"){
+    categoryFilterFunc("Electronic");
+  }
+  
+});
+function categoryFilterFunc(categoryVal){
+    const todos = todoList.children;
+    console.log(todos);
+  for (let i = 0; i < todos.length; i++) {
+    if (todos[i].cat!==(categoryVal)) {
+      todos[i].style.display = "none";
+    }
+    else{
+        todos[i].style.display = "grid"; 
+    }
+  }
+}
+//priority filter
+priorityFilter.addEventListener("change",(e)=>{
+  const el=e.target.value;
+  console.log(el);
+  if(el=="Low Priority"){
+    priorityFilterFunc("Low Priority");
+  }
+  else if(el=="Medium Priority"){
+    priorityFilterFunc("Medium Priority");
+  }
+  else if(el=="High Priority"){
+    priorityFilterFunc("High Priority");
+  }
+  
+});
+function priorityFilterFunc(priorityVal){
+    const todos = todoList.children;
+    console.log(todos);
+  for (let i = 0; i < todos.length; i++) {
+    if (!todos[i].classList.contains(priorityVal)) {
+      todos[i].style.display = "none";
+    }
+    else{
+        todos[i].style.display = "grid"; 
+    }
   }
 }
 
-// Fetch tasks and retrieve from local storage on page load
-window.addEventListener('load', loadTasksFromLocalStorage);
+//edit
+function onEditTask(id){
+   
+}
+
+//search function
+function Search() {
+    // Declare variables
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById('myInput');
+    filter = input.value.toUpperCase();
+    ul = document.getElementById("myUL");
+    li = ul.getElementsByTagName('li');
+  
+    // Loop through all list items, and hide those who don't match the search query
+    for (i = 0; i < li.length; i++) {
+      a = li[i].getElementsByTagName("a")[0];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li[i].style.display = "";
+      } else {
+        li[i].style.display = "none";
+      }
+    }
+  }
+
+
+
 
 
